@@ -48,6 +48,11 @@ const TodoApp = () => {
     linkElement.click();
   };
 
+  const startEdit = (todo) => {
+    setEditingId(todo.id);
+    setFormData({ task: todo.task, date: todo.date, note: todo.note, priority: todo.priority });
+  };
+
   const filteredTodos = todos.filter(t => t.task.includes(searchTerm));
 
   return (
