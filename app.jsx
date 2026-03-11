@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const TodoApp = () => {
   // 1. 初始化存储：从本地持久化空间读取
@@ -13,6 +13,36 @@ const TodoApp = () => {
   const [formData, setFormData] = useState({ task: '', date: '', note: '', priority: '普通' });
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const monthRef = useRef(null);
+  const dayRef = useRef(null);
+
+  const dateYear = formData.date ? formData.date.split('-')[0] : '';
+  const dateMonth = formData.date ? formData.date.split('-')[1] || '' : '';
+  const dateDay = formData.date ? formData.date.split('-')[2] || '' : '';
+
+  const buildDate = (y, m, d) => {
+    if (!y) return '';
+    if (!m) return y;
+    if (!d) return `${y}-${m}`;
+    return `${y}-${m}-${d}`;
+  };
+
+  const handleYearChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setFormData({ ...formData, date: buildDate(val, dateMonth, dateDay) });
+    if (val.length === 4) monthRef.current?.focus();
+  };
+
+  const handleMonthChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setFormData({ ...formData, date: buildDate(dateYear, val, dateDay) });
+    if (val.length === 2) dayRef.current?.focus();
+  };
+
+  const handleDayChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setFormData({ ...formData, date: buildDate(dateYear, dateMonth, val) });
+  };
 
   // 2. 自动持久化：每当 todos 改变，存入 localStorage
   useEffect(() => {
@@ -92,16 +122,42 @@ const TodoApp = () => {
                     placeholder="去做什么？"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-2">
                     <label className="text-xs font-bold text-slate-400 ml-1">日期</label>
-                    <input
-                      name="date"
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({...formData, date: e.target.value})}
-                      className="w-full mt-1 px-4 py-3 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                    />
+                    <div className="flex items-center gap-1 mt-1 px-3 py-3 bg-slate-50 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500 text-sm">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={4}
+                        placeholder="YYYY"
+                        value={dateYear}
+                        onChange={handleYearChange}
+                        className="w-12 bg-transparent outline-none text-center"
+                      />
+                      <span className="text-slate-300">-</span>
+                      <input
+                        ref={monthRef}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={2}
+                        placeholder="MM"
+                        value={dateMonth}
+                        onChange={handleMonthChange}
+                        className="w-8 bg-transparent outline-none text-center"
+                      />
+                      <span className="text-slate-300">-</span>
+                      <input
+                        ref={dayRef}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={2}
+                        placeholder="DD"
+                        value={dateDay}
+                        onChange={handleDayChange}
+                        className="w-8 bg-transparent outline-none text-center"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-400 ml-1">优先级</label>
